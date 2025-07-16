@@ -2,8 +2,8 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Reproductor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Reproductor inteligente</title>
     <style>
       body {
         font-family: sans-serif;
@@ -11,18 +11,15 @@
         padding: 2em;
         background: #f0f0f0;
       }
-
       h1 {
         margin-bottom: 0.5em;
       }
-
       img {
         width: 90%;
         max-width: 400px;
         border-radius: 12px;
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
       }
-
       .button {
         margin-top: 1em;
         padding: 0.7em 1.4em;
@@ -33,16 +30,13 @@
         font-size: 1em;
         cursor: pointer;
       }
-
       .button:hover {
         background-color: #004999;
       }
-
       .error {
         color: red;
         font-weight: bold;
       }
-
       .nav-link {
         display: inline-block;
         margin-top: 1.5em;
@@ -56,7 +50,7 @@
     <img id="imagen" src="" alt="Imagen del sonido" style="display: none" />
     <br /><br />
 
-    <audio id="audio" style="display: none" autoplay muted>
+    <audio id="audio" autoplay muted>
       <source id="audio-src" src="" type="audio/mpeg" />
       Tu navegador no soporta el audio.
     </audio>
@@ -82,6 +76,14 @@
       const audioEl = document.getElementById("audio");
       const replayBtn = document.getElementById("replayBtn");
 
+      function activarSonidoReal() {
+        audioEl.muted = false;
+        audioEl.play();
+        // Quitamos los listeners para que no se vuelva a llamar
+        document.body.removeEventListener("touchstart", activarSonidoReal);
+        document.body.removeEventListener("pointerdown", activarSonidoReal);
+      }
+
       if (!id || !sonidos[id]) {
         document.getElementById("error").textContent =
           "⚠️ Sonido no encontrado.";
@@ -94,13 +96,23 @@
         audioEl.style.display = "block";
         replayBtn.style.display = "inline-block";
 
-        // Intentar reproducir automáticamente (algunos navegadores lo bloquean sin interacción)
+        // Intentar reproducir en modo silenciado
         audioEl.play().catch(() => {
-          console.log("Autoplay bloqueado, esperando interacción");
+          console.log("Autoplay falló");
         });
 
+        // Cuando el usuario interactúe activamos el sonido real
+        document.body.addEventListener("touchstart", activarSonidoReal, {
+          once: true,
+        });
+        document.body.addEventListener("pointerdown", activarSonidoReal, {
+          once: true,
+        });
+
+        // Botón para volver a reproducir siempre con sonido activado
         replayBtn.onclick = () => {
           audioEl.currentTime = 0;
+          audioEl.muted = false;
           audioEl.play();
         };
       }
