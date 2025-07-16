@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Reproductor inteligente</title>
+    <title>Reproductor seguro</title>
     <style>
       body {
         font-family: sans-serif;
@@ -22,26 +22,27 @@
       }
       .button {
         margin-top: 1em;
-        padding: 0.7em 1.4em;
+        padding: 1em 2em;
         background-color: #0066cc;
         color: white;
         border: none;
-        border-radius: 8px;
-        font-size: 1em;
+        border-radius: 12px;
+        font-size: 1.2em;
         cursor: pointer;
+        user-select: none;
       }
       .button:hover {
         background-color: #004999;
-      }
-      .error {
-        color: red;
-        font-weight: bold;
       }
       .nav-link {
         display: inline-block;
         margin-top: 1.5em;
         text-decoration: none;
         color: #333;
+      }
+      .error {
+        color: red;
+        font-weight: bold;
       }
     </style>
   </head>
@@ -50,13 +51,13 @@
     <img id="imagen" src="" alt="Imagen del sonido" style="display: none" />
     <br /><br />
 
-    <audio id="audio" autoplay muted>
+    <audio id="audio" preload="auto">
       <source id="audio-src" src="" type="audio/mpeg" />
       Tu navegador no soporta el audio.
     </audio>
 
-    <button id="replayBtn" class="button" style="display: none">
-      🔁 Volver a reproducir
+    <button id="playBtn" class="button" style="display: none">
+      ▶️ Reproducir sonido
     </button>
     <br /><br />
 
@@ -74,46 +75,39 @@
       const id = params.get("id");
 
       const audioEl = document.getElementById("audio");
-      const replayBtn = document.getElementById("replayBtn");
-
-      function activarSonidoReal() {
-        audioEl.muted = false;
-        audioEl.play();
-        // Quitamos los listeners para que no se vuelva a llamar
-        document.body.removeEventListener("touchstart", activarSonidoReal);
-        document.body.removeEventListener("pointerdown", activarSonidoReal);
-      }
+      const playBtn = document.getElementById("playBtn");
+      const tituloEl = document.getElementById("titulo");
+      const imagenEl = document.getElementById("imagen");
+      const errorEl = document.getElementById("error");
 
       if (!id || !sonidos[id]) {
-        document.getElementById("error").textContent =
-          "⚠️ Sonido no encontrado.";
+        errorEl.textContent = "⚠️ Sonido no encontrado.";
+        playBtn.style.display = "none";
+        audioEl.style.display = "none";
+        imagenEl.style.display = "none";
+        tituloEl.textContent = "";
       } else {
-        document.getElementById("titulo").textContent = sonidos[id];
-        document.getElementById("imagen").src = `assets/img/${id}.jpg`;
-        document.getElementById("imagen").style.display = "block";
+        tituloEl.textContent = sonidos[id];
+        imagenEl.src = `assets/img/${id}.jpg`;
+        imagenEl.style.display = "block";
         document.getElementById("audio-src").src = `assets/audio/${id}.mp3`;
         audioEl.load();
-        audioEl.style.display = "block";
-        replayBtn.style.display = "inline-block";
+        audioEl.style.display = "none";
 
-        // Intentar reproducir en modo silenciado
-        audioEl.play().catch(() => {
-          console.log("Autoplay falló");
-        });
+        // Mostrar botón para que usuario inicie la reproducción
+        playBtn.style.display = "inline-block";
+        playBtn.textContent = "▶️ Reproducir sonido";
 
-        // Cuando el usuario interactúe activamos el sonido real
-        document.body.addEventListener("touchstart", activarSonidoReal, {
-          once: true,
-        });
-        document.body.addEventListener("pointerdown", activarSonidoReal, {
-          once: true,
-        });
-
-        // Botón para volver a reproducir siempre con sonido activado
-        replayBtn.onclick = () => {
-          audioEl.currentTime = 0;
-          audioEl.muted = false;
-          audioEl.play();
+        playBtn.onclick = () => {
+          audioEl.style.display = "block";
+          audioEl
+            .play()
+            .then(() => {
+              playBtn.textContent = "🔁 Volver a reproducir";
+            })
+            .catch((e) => {
+              alert("Error reproduciendo el audio: " + e.message);
+            });
         };
       }
     </script>
