@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Reproductor seguro</title>
+    <title>Reproductor de sonido</title>
     <style>
       body {
         font-family: sans-serif;
@@ -51,10 +51,7 @@
     <img id="imagen" src="" alt="Imagen del sonido" style="display: none" />
     <br /><br />
 
-    <audio id="audio" preload="auto">
-      <source id="audio-src" src="" type="audio/mpeg" />
-      Tu navegador no soporta el audio.
-    </audio>
+    <audio id="audio" preload="auto"></audio>
 
     <button id="playBtn" class="button" style="display: none">
       ▶️ Reproducir sonido
@@ -66,9 +63,22 @@
 
     <script>
       const sonidos = {
-        perro: "🐶 Ladrido de perro",
-        auto: "🚗 Motor de auto",
-        gato: "🐱 Maullido de gato",
+        a: {
+          title: "Letra A",
+          description: "Sonido de la letra A",
+          emoji: "🅰️",
+        },
+        b: {
+          title: "Letra B",
+          description: "Sonido de la letra B",
+          emoji: "🅱️",
+        },
+        c: {
+          title: "Letra C",
+          description: "Sonido de la letra C",
+          emoji: "©️",
+        },
+        // Agregá más letras aquí
       };
 
       const params = new URLSearchParams(window.location.search);
@@ -87,14 +97,13 @@
         imagenEl.style.display = "none";
         tituloEl.textContent = "";
       } else {
-        tituloEl.textContent = sonidos[id];
+        const s = sonidos[id];
+        tituloEl.textContent = `${s.emoji} ${s.title}`;
         imagenEl.src = `assets/img/${id}.jpg`;
         imagenEl.style.display = "block";
-        document.getElementById("audio-src").src = `assets/audio/${id}.mp3`;
-        audioEl.load();
-        audioEl.style.display = "none";
 
-        // Mostrar botón para que usuario inicie la reproducción
+        audioEl.src = `assets/audio/${id}.mp3`;
+        audioEl.style.display = "none";
         playBtn.style.display = "inline-block";
         playBtn.textContent = "▶️ Reproducir sonido";
 
@@ -105,9 +114,7 @@
             .then(() => {
               playBtn.textContent = "🔁 Volver a reproducir";
             })
-            .catch((e) => {
-              alert("Error reproduciendo el audio: " + e.message);
-            });
+            .catch((e) => alert("Error reproduciendo el audio: " + e.message));
         };
       }
     </script>

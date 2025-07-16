@@ -1,95 +1,104 @@
-
 <!DOCTYPE html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Menú de Sonidos</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      text-align: center;
-      padding: 2em;
-      background: #f4f4f4;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Menú de sonidos</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        padding: 1em;
+        background: #f7f7f7;
+      }
+      h1 {
+        text-align: center;
+        margin-bottom: 1em;
+      }
+      ul {
+        list-style: none;
+        padding: 0;
+        max-width: 600px;
+        margin: 0 auto;
+      }
+      li {
+        background: white;
+        margin-bottom: 1em;
+        padding: 1em;
+        border-radius: 8px;
+        box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 1em;
+      }
+      li img {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 8px;
+      }
+      li a {
+        flex-grow: 1;
+        text-decoration: none;
+        color: #222;
+        font-size: 1.1em;
+        font-weight: bold;
+      }
+      li a:hover {
+        color: #0066cc;
+      }
+      li .desc {
+        font-size: 0.9em;
+        color: #555;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Menú de sonidos</h1>
+    <ul id="lista-sonidos"></ul>
 
-    h1 {
-      margin-bottom: 1em;
-    }
+    <script>
+      const sonidos = {
+        a: {
+          title: "Letra A",
+          description: "Sonido de la letra A",
+          emoji: "🅰️",
+        },
+        b: {
+          title: "Letra B",
+          description: "Sonido de la letra B",
+          emoji: "🅱️",
+        },
+        c: {
+          title: "Letra C",
+          description: "Sonido de la letra C",
+          emoji: "©️",
+        },
+        // Agregá más letras aquí
+      };
 
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 2em;
-      max-width: 1000px;
-      margin: 0 auto;
-    }
+      const ul = document.getElementById("lista-sonidos");
 
-    .card {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      padding: 1em;
-      transition: transform 0.2s;
-    }
+      for (const id in sonidos) {
+        const s = sonidos[id];
+        const li = document.createElement("li");
 
-    .card:hover {
-      transform: translateY(-4px);
-    }
+        const img = document.createElement("img");
+        img.src = `assets/img/${id}.jpg`;
+        img.alt = s.title;
 
-    .card img {
-      width: 100%;
-      height: auto;
-      border-radius: 8px;
-      margin-bottom: 0.5em;
-    }
+        const link = document.createElement("a");
+        link.href = `play.html?id=${id}`;
+        link.textContent = `${s.emoji} ${s.title}`;
 
-    .card h2 {
-      margin: 0.5em 0 0.2em;
-    }
+        const desc = document.createElement("div");
+        desc.className = "desc";
+        desc.textContent = s.description;
 
-    .card p {
-      color: #666;
-      font-size: 0.9em;
-    }
-
-    .card a {
-      display: inline-block;
-      margin-top: 1em;
-      background-color: #0066cc;
-      color: white;
-      padding: 0.5em 1em;
-      border-radius: 8px;
-      text-decoration: none;
-    }
-
-    .card a:hover {
-      background-color: #004999;
-    }
-  </style>
-</head>
-<body>
-  <h1>🎵 Menú de Sonidos</h1>
-
-  <div class="grid">
-    <div class="card">
-      <img src="assets/img/perro.jpg" alt="Perro" />
-      <h2>🐶 Ladrido de perro</h2>
-      <p>Un perro ladrando con fuerza.</p>
-      <a href="play.html?id=perro">Escuchar</a>
-    </div>
-    <div class="card">
-      <img src="assets/img/auto.jpg" alt="Auto" />
-      <h2>🚗 Motor de auto</h2>
-      <p>El sonido de un motor encendiéndose.</p>
-      <a href="play.html?id=auto">Escuchar</a>
-    </div>
-    <div class="card">
-      <img src="assets/img/gato.jpg" alt="Gato" />
-      <h2>🐱 Maullido de gato</h2>
-      <p>Un gato pidiendo comida.</p>
-      <a href="play.html?id=gato">Escuchar</a>
-    </div>
-  </div>
-</body>
+        li.appendChild(img);
+        li.appendChild(link);
+        li.appendChild(desc);
+        ul.appendChild(li);
+      }
+    </script>
+  </body>
 </html>
