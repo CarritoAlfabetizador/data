@@ -1,60 +1,109 @@
-
 <!DOCTYPE html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Reproductor</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      text-align: center;
-      padding: 2em;
-    }
-    img {
-      width: 90%;
-      max-width: 400px;
-      border-radius: 12px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.2);
-    }
-    .error {
-      color: red;
-      font-weight: bold;
-    }
-  </style>
-</head>
-<body>
-  <h1 id="titulo">Cargando...</h1>
-  <img id="imagen" src="" alt="Imagen del sonido" style="display: none;" />
-  <br><br>
-  <audio id="audio" controls autoplay style="display: none;">
-    <source id="audio-src" src="" type="audio/mpeg" />
-    Tu navegador no soporta el audio.
-  </audio>
-  <br><br>
-  <a href="index.html">⬅️ Volver al menú</a>
-  <p id="error" class="error"></p>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reproductor</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        text-align: center;
+        padding: 2em;
+        background: #f0f0f0;
+      }
 
-  <script>
-    const sonidos = {
-      perro: "🐶 Ladrido de perro",
-      auto: "🚗 Motor de auto",
-      gato: "🐱 Maullido de gato"
-    };
+      h1 {
+        margin-bottom: 0.5em;
+      }
 
-    const params = new URLSearchParams(window.location.search);
-    const id = params.get("id");
+      img {
+        width: 90%;
+        max-width: 400px;
+        border-radius: 12px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+      }
 
-    if (!id || !sonidos[id]) {
-      document.getElementById("error").textContent = "⚠️ Sonido no encontrado.";
-    } else {
-      document.getElementById("titulo").textContent = sonidos[id];
-      document.getElementById("imagen").src = `assets/img/${id}.jpg`;
-      document.getElementById("imagen").style.display = "block";
-      document.getElementById("audio-src").src = `assets/audio/${id}.mp3`;
-      document.getElementById("audio").load();
-      document.getElementById("audio").style.display = "block";
-    }
-  </script>
-</body>
+      .button {
+        margin-top: 1em;
+        padding: 0.7em 1.4em;
+        background-color: #0066cc;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 1em;
+        cursor: pointer;
+      }
+
+      .button:hover {
+        background-color: #004999;
+      }
+
+      .error {
+        color: red;
+        font-weight: bold;
+      }
+
+      .nav-link {
+        display: inline-block;
+        margin-top: 1.5em;
+        text-decoration: none;
+        color: #333;
+      }
+    </style>
+  </head>
+  <body>
+    <h1 id="titulo">Cargando...</h1>
+    <img id="imagen" src="" alt="Imagen del sonido" style="display: none" />
+    <br /><br />
+
+    <audio id="audio" style="display: none" autoplay muted>
+      <source id="audio-src" src="" type="audio/mpeg" />
+      Tu navegador no soporta el audio.
+    </audio>
+
+    <button id="replayBtn" class="button" style="display: none">
+      🔁 Volver a reproducir
+    </button>
+    <br /><br />
+
+    <a class="nav-link" href="index.html">⬅️ Volver al menú</a>
+    <p id="error" class="error"></p>
+
+    <script>
+      const sonidos = {
+        perro: "🐶 Ladrido de perro",
+        auto: "🚗 Motor de auto",
+        gato: "🐱 Maullido de gato",
+      };
+
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get("id");
+
+      const audioEl = document.getElementById("audio");
+      const replayBtn = document.getElementById("replayBtn");
+
+      if (!id || !sonidos[id]) {
+        document.getElementById("error").textContent =
+          "⚠️ Sonido no encontrado.";
+      } else {
+        document.getElementById("titulo").textContent = sonidos[id];
+        document.getElementById("imagen").src = `assets/img/${id}.jpg`;
+        document.getElementById("imagen").style.display = "block";
+        document.getElementById("audio-src").src = `assets/audio/${id}.mp3`;
+        audioEl.load();
+        audioEl.style.display = "block";
+        replayBtn.style.display = "inline-block";
+
+        // Intentar reproducir automáticamente (algunos navegadores lo bloquean sin interacción)
+        audioEl.play().catch(() => {
+          console.log("Autoplay bloqueado, esperando interacción");
+        });
+
+        replayBtn.onclick = () => {
+          audioEl.currentTime = 0;
+          audioEl.play();
+        };
+      }
+    </script>
+  </body>
 </html>
