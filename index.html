@@ -57,24 +57,17 @@
     <ul id="lista-sonidos"></ul>
 
     <script>
-      const sonidos = {
-        a: {
-          title: "Letra A",
-          description: "Sonido de la letra A",
-          emoji: "🅰️",
-        },
-        b: {
-          title: "Letra B",
-          description: "Sonido de la letra B",
-          emoji: "🅱️",
-        },
-        c: {
-          title: "Letra C",
-          description: "Sonido de la letra C",
-          emoji: "©️",
-        },
-        // Agregá más letras aquí
-      };
+      const ids = [..."0123456789", ..."ABCDEFGHIJKLMNÑOPQRSTUVWXYZ"];
+
+      const sonidos = {};
+
+      ids.forEach((id) => {
+        sonidos[id.toLowerCase()] = {
+          title: `Letra ${id}`,
+          description: `Sonido de la letra ${id}`,
+          emoji: id, // o podés usar algún mapeo de emojis si querés uno específico
+        };
+      });
 
       const ul = document.getElementById("lista-sonidos");
 
