@@ -10,89 +10,163 @@
         padding: 1em;
         background: #f7f7f7;
       }
+
       h1 {
         text-align: center;
         margin-bottom: 1em;
       }
-      ul {
-        list-style: none;
-        padding: 0;
-        max-width: 600px;
+
+      #grid-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 1em;
+        max-width: 900px;
         margin: 0 auto;
+        padding: 0;
       }
-      li {
+
+      .card {
         background: white;
-        margin-bottom: 1em;
         padding: 1em;
         border-radius: 8px;
         box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
         display: flex;
+        flex-direction: column;
         align-items: center;
-        gap: 1em;
+        text-align: center;
       }
-      li img {
+
+      .card img {
         width: 80px;
         height: 80px;
         object-fit: cover;
         border-radius: 8px;
+        margin-bottom: 0.5em;
       }
-      li a {
-        flex-grow: 1;
+
+      .card a {
         text-decoration: none;
         color: #222;
         font-size: 1.1em;
         font-weight: bold;
+        margin-bottom: 0.3em;
       }
-      li a:hover {
+
+      .card a:hover {
         color: #0066cc;
       }
-      li .desc {
+
+      .desc {
         font-size: 0.9em;
         color: #555;
+      }
+
+      .pagination {
+        margin-top: 2em;
+        text-align: center;
+      }
+
+      .pagination button {
+        margin: 0 0.5em;
+        padding: 0.5em 1em;
+        font-size: 1em;
+        border: none;
+        border-radius: 6px;
+        background-color: #0066cc;
+        color: white;
+        cursor: pointer;
+      }
+
+      .pagination button:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
       }
     </style>
   </head>
   <body>
     <h1>Menú de sonidos</h1>
-    <ul id="lista-sonidos"></ul>
+    <div id="grid-container"></div>
+    <div class="pagination">
+      <button id="prevBtn">Anterior</button>
+      <span id="pageInfo"></span>
+      <button id="nextBtn">Siguiente</button>
+    </div>
 
     <script>
       const ids = [..."0123456789", ..."ABCDEFGHIJKLMNÑOPQRSTUVWXYZ"];
-
       const sonidos = {};
-
       ids.forEach((id) => {
         sonidos[id.toLowerCase()] = {
           title: `Letra ${id}`,
           description: `Sonido de la letra ${id}`,
-          emoji: id, // o podés usar algún mapeo de emojis si querés uno específico
+          emoji: id,
         };
       });
 
-      const ul = document.getElementById("lista-sonidos");
+      const ITEMS_PER_PAGE = 12;
+      let currentPage = 1;
 
-      for (const id in sonidos) {
-        const s = sonidos[id];
-        const li = document.createElement("li");
+      const container = document.getElementById("grid-container");
+      const prevBtn = document.getElementById("prevBtn");
+      const nextBtn = document.getElementById("nextBtn");
+      const pageInfo = document.getElementById("pageInfo");
 
-        const img = document.createElement("img");
-        const upperId = id.toUpperCase();
-        img.src = `assets/${upperId}/${upperId}.jpg`;
-        img.alt = s.title;
+      const allIds = Object.keys(sonidos);
 
-        const link = document.createElement("a");
-        link.href = `play.html?id=${id}`;
-        link.textContent = `${s.emoji} ${s.title}`;
+      function renderPage(page) {
+        container.innerHTML = "";
+        const start = (page - 1) * ITEMS_PER_PAGE;
+        const end = start + ITEMS_PER_PAGE;
+        const pageItems = allIds.slice(start, end);
 
-        const desc = document.createElement("div");
-        desc.className = "desc";
-        desc.textContent = s.description;
+        pageItems.forEach((id) => {
+          const s = sonidos[id];
+          const upperId = id.toUpperCase();
 
-        li.appendChild(img);
-        li.appendChild(link);
-        li.appendChild(desc);
-        ul.appendChild(li);
+          const card = document.createElement("div");
+          card.className = "card";
+
+          const img = document.createElement("img");
+          img.src = `assets/${upperId}/${upperId}.jpg`;
+          img.alt = s.title;
+
+          const link = document.createElement("a");
+          link.href = `play.html?id=${id}`;
+          link.textContent = `${s.emoji} ${s.title}`;
+
+          const desc = document.createElement("div");
+          desc.className = "desc";
+          desc.textContent = s.description;
+
+          card.appendChild(img);
+          card.appendChild(link);
+          card.appendChild(desc);
+
+          container.appendChild(card);
+        });
+
+        pageInfo.textContent = `Página ${page} de ${Math.ceil(
+          allIds.length / ITEMS_PER_PAGE
+        )}`;
+        prevBtn.disabled = page === 1;
+        nextBtn.disabled = page >= Math.ceil(allIds.length / ITEMS_PER_PAGE);
       }
+
+      prevBtn.addEventListener("click", () => {
+        if (currentPage > 1) {
+          currentPage--;
+          renderPage(currentPage);
+        }
+      });
+
+      nextBtn.addEventListener("click", () => {
+        if (currentPage < Math.ceil(allIds.length / ITEMS_PER_PAGE)) {
+          currentPage++;
+          renderPage(currentPage);
+        }
+      });
+
+      renderPage(currentPage);
     </script>
   </body>
 </html>
