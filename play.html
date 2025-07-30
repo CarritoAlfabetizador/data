@@ -84,6 +84,8 @@
       const params = new URLSearchParams(window.location.search);
       const id = params.get("id");
 
+      const upperId = id ? id.toUpperCase() : "";
+
       const audioEl = document.getElementById("audio");
       const playBtn = document.getElementById("playBtn");
       const tituloEl = document.getElementById("titulo");
@@ -99,10 +101,10 @@
       } else {
         const s = sonidos[id];
         tituloEl.textContent = `${s.emoji} ${s.title}`;
-        imagenEl.src = `assets/${id}/${id}.jpg`;
+        imagenEl.src = `assets/${upperId}/${upperId}.jpg`;
         imagenEl.style.display = "block";
 
-        audioEl.src = `assets/${id}/${id}.mp3`;
+        audioEl.src = `assets/${upperId}/${upperId}.mp3`;
         audioEl.style.display = "none";
         playBtn.style.display = "inline-block";
         playBtn.textContent = "▶️ Reproducir sonido";

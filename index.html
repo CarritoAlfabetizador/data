@@ -83,7 +83,8 @@
         const li = document.createElement("li");
 
         const img = document.createElement("img");
-        img.src = `assets/${id}/${id}.jpg`;
+        const upperId = id.toUpperCase();
+        img.src = `assets/${upperId}/${upperId}.jpg`;
         img.alt = s.title;
 
         const link = document.createElement("a");
