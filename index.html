@@ -10,74 +10,65 @@
         padding: 1em;
         background: #f7f7f7;
       }
-
       h1 {
         text-align: center;
         margin-bottom: 1em;
       }
-
-      #grid-container {
+      .grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
         gap: 1em;
-        max-width: 900px;
+        max-width: 1000px;
         margin: 0 auto;
-        padding: 0;
       }
-
       .card {
         background: white;
         padding: 1em;
         border-radius: 8px;
         box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
+      }
+      .card a {
         display: flex;
         flex-direction: column;
         align-items: center;
         text-align: center;
+        color: #222;
+        text-decoration: none;
+        font-size: 1.1em;
+        font-weight: bold;
+        height: 100%;
       }
-
+      .card a:hover {
+        color: #0066cc;
+      }
       .card img {
-        width: 80px;
-        height: 80px;
+        width: 100px;
+        height: 100px;
         object-fit: cover;
         border-radius: 8px;
         margin-bottom: 0.5em;
       }
-
-      .card a {
-        text-decoration: none;
-        color: #222;
-        font-size: 1.1em;
-        font-weight: bold;
-        margin-bottom: 0.3em;
-      }
-
-      .card a:hover {
-        color: #0066cc;
-      }
-
-      .desc {
+      .card .desc {
         font-size: 0.9em;
         color: #555;
+        margin-top: 0.3em;
+        font-weight: normal;
       }
-
       .pagination {
-        margin-top: 2em;
         text-align: center;
+        margin-top: 1.5em;
       }
-
       .pagination button {
         margin: 0 0.5em;
         padding: 0.5em 1em;
         font-size: 1em;
         border: none;
-        border-radius: 6px;
         background-color: #0066cc;
         color: white;
+        border-radius: 6px;
         cursor: pointer;
       }
-
-      .pagination button:disabled {
+      .pagination button[disabled] {
         background-color: #ccc;
         cursor: not-allowed;
       }
@@ -85,11 +76,11 @@
   </head>
   <body>
     <h1>Menú de sonidos</h1>
-    <div id="grid-container"></div>
+    <div id="grid" class="grid"></div>
     <div class="pagination">
-      <button id="prevBtn">Anterior</button>
+      <button id="prevBtn">⬅️ Anterior</button>
       <span id="pageInfo"></span>
-      <button id="nextBtn">Siguiente</button>
+      <button id="nextBtn">Siguiente ➡️</button>
     </div>
 
     <script>
@@ -103,68 +94,80 @@
         };
       });
 
-      const ITEMS_PER_PAGE = 12;
-      let currentPage = 1;
-
-      const container = document.getElementById("grid-container");
+      const grid = document.getElementById("grid");
       const prevBtn = document.getElementById("prevBtn");
       const nextBtn = document.getElementById("nextBtn");
       const pageInfo = document.getElementById("pageInfo");
 
-      const allIds = Object.keys(sonidos);
+      let currentPage = 1;
+      const keys = Object.keys(sonidos);
+
+      function calculateColumns() {
+        const gridWidth = grid.clientWidth;
+        const minColWidth = 180; // debe coincidir con minmax(180px, 1fr)
+        const cols = Math.floor(gridWidth / minColWidth);
+        return cols > 0 ? cols : 1;
+      }
 
       function renderPage(page) {
-        container.innerHTML = "";
-        const start = (page - 1) * ITEMS_PER_PAGE;
-        const end = start + ITEMS_PER_PAGE;
-        const pageItems = allIds.slice(start, end);
+        grid.innerHTML = "";
+        const cols = calculateColumns();
+        const rowsPerPage = 3; // filas por página
 
-        pageItems.forEach((id) => {
+        const itemsPerPage = cols * rowsPerPage;
+        const totalPages = Math.ceil(keys.length / itemsPerPage);
+
+        if (page > totalPages) currentPage = totalPages;
+        else if (page < 1) currentPage = 1;
+        else currentPage = page;
+
+        const start = (currentPage - 1) * itemsPerPage;
+        const end = start + itemsPerPage;
+        const currentItems = keys.slice(start, end);
+
+        currentItems.forEach((id) => {
           const s = sonidos[id];
           const upperId = id.toUpperCase();
 
           const card = document.createElement("div");
           card.className = "card";
 
+          const link = document.createElement("a");
+          link.href = `play.html?id=${id}`;
+
           const img = document.createElement("img");
           img.src = `assets/${upperId}/${upperId}.jpg`;
           img.alt = s.title;
 
-          const link = document.createElement("a");
-          link.href = `play.html?id=${id}`;
-          link.textContent = `${s.emoji} ${s.title}`;
+          const title = document.createElement("div");
+          title.textContent = `${s.emoji} ${s.title}`;
 
           const desc = document.createElement("div");
           desc.className = "desc";
           desc.textContent = s.description;
 
-          card.appendChild(img);
-          card.appendChild(link);
-          card.appendChild(desc);
+          link.appendChild(img);
+          link.appendChild(title);
+          link.appendChild(desc);
 
-          container.appendChild(card);
+          card.appendChild(link);
+          grid.appendChild(card);
         });
 
-        pageInfo.textContent = `Página ${page} de ${Math.ceil(
-          allIds.length / ITEMS_PER_PAGE
-        )}`;
-        prevBtn.disabled = page === 1;
-        nextBtn.disabled = page >= Math.ceil(allIds.length / ITEMS_PER_PAGE);
+        pageInfo.textContent = `Página ${currentPage} de ${totalPages}`;
+        prevBtn.disabled = currentPage === 1;
+        nextBtn.disabled = currentPage === totalPages;
       }
 
-      prevBtn.addEventListener("click", () => {
-        if (currentPage > 1) {
-          currentPage--;
-          renderPage(currentPage);
-        }
-      });
+      prevBtn.onclick = () => {
+        renderPage(currentPage - 1);
+      };
 
-      nextBtn.addEventListener("click", () => {
-        if (currentPage < Math.ceil(allIds.length / ITEMS_PER_PAGE)) {
-          currentPage++;
-          renderPage(currentPage);
-        }
-      });
+      nextBtn.onclick = () => {
+        renderPage(currentPage + 1);
+      };
+
+      window.addEventListener("resize", () => renderPage(currentPage));
 
       renderPage(currentPage);
     </script>
