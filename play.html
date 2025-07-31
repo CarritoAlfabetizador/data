@@ -34,8 +34,8 @@
         justify-content: center;
       }
       .image-container img {
-        width: 350px;
-        height: 350px;
+        max-height: 350px;
+        min-height: 350px;
         object-fit: cover;
         border-radius: 12px;
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
@@ -43,13 +43,61 @@
       }
       .nav-link {
         display: inline-block;
-        margin-top: 1em; /* margen arriba para separarlo del botón */
+        margin-top: 1em;
         text-decoration: none;
         color: #333;
       }
       .error {
         color: red;
         font-weight: bold;
+      }
+      .nav-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 1em;
+        margin-top: 2em;
+      }
+
+      /* Modal */
+      #modal {
+        display: none;
+        position: fixed;
+        z-index: 999;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.6);
+        justify-content: center;
+        align-items: flex-start;
+        padding-top: 25vh;
+        overflow: hidden;
+        box-sizing: border-box;
+      }
+      #modal.show {
+        display: flex;
+      }
+      #modal-content {
+        background: white;
+        border-radius: 8px;
+        padding: 2em;
+        max-width: 400px;
+        width: 90%;
+        box-shadow: 0 0 10px black;
+        text-align: center;
+      }
+
+      #modal-content p {
+        font-size: 1.2em;
+        margin-bottom: 1em;
+      }
+      #modal-close {
+        background: #0066cc;
+        color: white;
+        border: none;
+        padding: 0.5em 1em;
+        border-radius: 6px;
+        cursor: pointer;
       }
     </style>
   </head>
@@ -66,20 +114,39 @@
       ▶️ Reproducir sonido
     </button>
 
+    <div class="nav-buttons">
+      <button id="prevBtn" class="button">⬅️ Anterior</button>
+      <button id="nextBtn" class="button">Siguiente ➡️</button>
+    </div>
+
     <div>
-      <!-- Mover el enlace justo debajo del botón -->
       <a class="nav-link" href="index.html">⬅️ Volver al menú</a>
     </div>
 
     <p id="error" class="error"></p>
 
+    <!-- Modal -->
+    <div
+      id="modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-title"
+    >
+      <div id="modal-content">
+        <p id="modal-message">La letra H no tiene sonido propio.</p>
+        <button id="modal-close" aria-label="Cerrar modal">Cerrar</button>
+      </div>
+    </div>
+
     <script>
       const ids = [..."0123456789", ..."ABCDEFGHIJKLMNÑOPQRSTUVWXYZ"];
       const sonidos = {};
       ids.forEach((id) => {
+        const isNumber = !isNaN(id);
+        const type = isNumber ? "Número" : "Letra";
         sonidos[id.toLowerCase()] = {
-          title: `Letra ${id}`,
-          description: `Sonido de la letra ${id}`,
+          title: `${type} ${id}`,
+          description: `Sonido de la ${type.toLowerCase()} ${id}`,
           emoji: id,
         };
       });
@@ -94,15 +161,25 @@
       const imagenEl = document.getElementById("imagen");
       const errorEl = document.getElementById("error");
 
+      const prevBtn = document.getElementById("prevBtn");
+      const nextBtn = document.getElementById("nextBtn");
+
+      const modal = document.getElementById("modal");
+      const modalClose = document.getElementById("modal-close");
+
+      const currentIndex = ids.findIndex((char) => char.toLowerCase() === id);
+
       if (!id || !sonidos[id]) {
         errorEl.textContent = "⚠️ Sonido no encontrado.";
         playBtn.style.display = "none";
         audioEl.style.display = "none";
         imagenEl.style.display = "none";
         tituloEl.textContent = "";
+        prevBtn.style.display = "none";
+        nextBtn.style.display = "none";
       } else {
         const s = sonidos[id];
-        tituloEl.textContent = `${s.emoji} ${s.title}`;
+        tituloEl.textContent = `${s.title}`;
         imagenEl.src = `assets/${upperId}/${upperId}.jpg`;
         imagenEl.style.display = "block";
 
@@ -112,6 +189,10 @@
         playBtn.textContent = "▶️ Reproducir sonido";
 
         playBtn.onclick = () => {
+          if (id.toLowerCase() === "h") {
+            modal.classList.add("show");
+            return;
+          }
           audioEl.style.display = "block";
           audioEl
             .play()
@@ -120,6 +201,34 @@
             })
             .catch((e) => alert("Error reproduciendo el audio: " + e.message));
         };
+
+        modalClose.onclick = () => {
+          modal.classList.remove("show");
+        };
+
+        window.onclick = (e) => {
+          if (e.target === modal) {
+            modal.classList.remove("show");
+          }
+        };
+
+        // Navegación siguiente/anterior
+        prevBtn.onclick = () => {
+          if (currentIndex > 0) {
+            const prevId = ids[currentIndex - 1].toLowerCase();
+            window.location.href = `play.html?id=${prevId}`;
+          }
+        };
+
+        nextBtn.onclick = () => {
+          if (currentIndex < ids.length - 1) {
+            const nextId = ids[currentIndex + 1].toLowerCase();
+            window.location.href = `play.html?id=${nextId}`;
+          }
+        };
+
+        if (currentIndex === 0) prevBtn.disabled = true;
+        if (currentIndex === ids.length - 1) nextBtn.disabled = true;
       }
     </script>
   </body>

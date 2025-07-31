@@ -37,16 +37,20 @@
         font-size: 1.1em;
         font-weight: bold;
         height: 100%;
+        min-height: 180px;
       }
       .card a:hover {
         color: #0066cc;
       }
       .card img {
-        width: 100px;
         height: 100px;
+        width: 100px;
         object-fit: cover;
         border-radius: 8px;
-        margin-bottom: 0.5em;
+        background-color: white;
+      }
+      .card .text-container {
+        margin-top: auto;
       }
       .card .desc {
         font-size: 0.9em;
@@ -86,10 +90,14 @@
     <script>
       const ids = [..."0123456789", ..."ABCDEFGHIJKLMNÑOPQRSTUVWXYZ"];
       const sonidos = {};
+
       ids.forEach((id) => {
+        const isNumber = !isNaN(id);
+        const type = isNumber ? "Número" : "Letra";
+        const pronoum = isNumber ? "del" : "de la";
         sonidos[id.toLowerCase()] = {
-          title: `Letra ${id}`,
-          description: `Sonido de la letra ${id}`,
+          title: `${type} ${id}`,
+          description: `Sonido ${pronoum} ${type.toLowerCase()} ${id}`,
           emoji: id,
         };
       });
@@ -104,7 +112,7 @@
 
       function calculateColumns() {
         const gridWidth = grid.clientWidth;
-        const minColWidth = 180; // debe coincidir con minmax(180px, 1fr)
+        const minColWidth = 180;
         const cols = Math.floor(gridWidth / minColWidth);
         return cols > 0 ? cols : 1;
       }
@@ -112,8 +120,7 @@
       function renderPage(page) {
         grid.innerHTML = "";
         const cols = calculateColumns();
-        const rowsPerPage = 3; // filas por página
-
+        const rowsPerPage = 3;
         const itemsPerPage = cols * rowsPerPage;
         const totalPages = Math.ceil(keys.length / itemsPerPage);
 
@@ -139,16 +146,21 @@
           img.src = `assets/${upperId}/${upperId}.jpg`;
           img.alt = s.title;
 
+          const textContainer = document.createElement("div");
+          textContainer.className = "text-container";
+
           const title = document.createElement("div");
-          title.textContent = `${s.emoji} ${s.title}`;
+          title.textContent = `${s.title}`;
 
           const desc = document.createElement("div");
           desc.className = "desc";
           desc.textContent = s.description;
 
+          textContainer.appendChild(title);
+          textContainer.appendChild(desc);
+
           link.appendChild(img);
-          link.appendChild(title);
-          link.appendChild(desc);
+          link.appendChild(textContainer);
 
           card.appendChild(link);
           grid.appendChild(card);
@@ -159,16 +171,9 @@
         nextBtn.disabled = currentPage === totalPages;
       }
 
-      prevBtn.onclick = () => {
-        renderPage(currentPage - 1);
-      };
-
-      nextBtn.onclick = () => {
-        renderPage(currentPage + 1);
-      };
-
+      prevBtn.onclick = () => renderPage(currentPage - 1);
+      nextBtn.onclick = () => renderPage(currentPage + 1);
       window.addEventListener("resize", () => renderPage(currentPage));
-
       renderPage(currentPage);
     </script>
   </body>
