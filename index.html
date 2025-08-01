@@ -5,10 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Menú de sonidos</title>
     <style>
+      :root {
+        --primary-color: #0066cc;
+        --primary-hover-color: #003366;
+        --background-color: #f0f0f0;
+        --card-background-color: #f7f7f7;
+        --border-color: black;
+      }
       body {
         font-family: sans-serif;
         padding: 1em;
-        background: #f7f7f7;
+        background: var(--background-color);
       }
       h1 {
         text-align: center;
@@ -22,10 +29,13 @@
         margin: 0 auto;
       }
       .card {
-        background: white;
+        background: var(--card-background-color);
         padding: 1em;
         border-radius: 8px;
         box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
       .card a {
         display: flex;
@@ -37,10 +47,11 @@
         font-size: 1.1em;
         font-weight: bold;
         height: 100%;
-        min-height: 180px;
+        width: 100%;
+        padding: 0;
       }
       .card a:hover {
-        color: #0066cc;
+        color: var(--primary-color);
       }
       .card img {
         height: 100px;
@@ -48,15 +59,17 @@
         object-fit: cover;
         border-radius: 8px;
         background-color: white;
+        margin: 0.25em 0;
       }
-      .card .text-container {
-        margin-top: auto;
+      .card-title {
+        font-size: 1.5em;
+        margin-bottom: 0.1em;
       }
       .card .desc {
         font-size: 0.9em;
         color: #555;
-        margin-top: 0.3em;
         font-weight: normal;
+        margin-top: 0.5em;
       }
       .pagination {
         text-align: center;
@@ -67,7 +80,7 @@
         padding: 0.5em 1em;
         font-size: 1em;
         border: none;
-        background-color: #0066cc;
+        background-color: var(--primary-color);
         color: white;
         border-radius: 6px;
         cursor: pointer;
@@ -88,40 +101,65 @@
     </div>
 
     <script>
-      const ids = [..."0123456789", ..."ABCDEFGHIJKLMNÑOPQRSTUVWXYZ"];
-      const sonidos = {};
-
-      ids.forEach((id) => {
-        const isNumber = !isNaN(id);
-        const type = isNumber ? "Número" : "Letra";
-        const pronoum = isNumber ? "del" : "de la";
-        sonidos[id.toLowerCase()] = {
-          title: `${type} ${id}`,
-          description: `Sonido ${pronoum} ${type.toLowerCase()} ${id}`,
-          emoji: id,
-        };
-      });
+      const sonidos = {
+        0: { title: "0", image: "CERO.jpeg" },
+        1: { title: "1", image: "UNO.jpeg" },
+        2: { title: "2", image: "DOS.jpeg" },
+        3: { title: "3", image: "TRES.jpeg" },
+        4: { title: "4", image: "CUATRO.jpeg" },
+        5: { title: "5", image: "CINCO.jpeg" },
+        6: { title: "6", image: "SEIS.jpeg" },
+        7: { title: "7", image: "SIETE.jpeg" },
+        8: { title: "8", image: "OCHO.jpeg" },
+        9: { title: "9", image: "NUEVE.jpeg" },
+        a: { title: "A", image: "ARMARIO.jpeg" },
+        b: { title: "B", image: "BANDERA.jpeg" },
+        c: { title: "C", image: "CAMPANA.jpeg" },
+        d: { title: "D", image: "DELANTAL.jpeg" },
+        e: { title: "E", image: "ESCALERA.jpeg" },
+        f: { title: "F", image: "FOCO.png" },
+        g: { title: "G", image: "GUITARRA.jpg" },
+        h: { title: "H", image: "HOSPITAL.jpeg" },
+        i: { title: "I", image: "IGLESIA.jpeg" },
+        j: { title: "J", image: "JARRA.jpeg" },
+        k: { title: "K", image: "KIOSCO.jpeg" },
+        l: { title: "L", image: "LIMÓN.jpeg" },
+        m: { title: "M", image: "MATE.jpg" },
+        n: { title: "N", image: "NARANJA.jpeg" },
+        ñ: { title: "Ñ", image: "NOQUIS.jpeg" },
+        o: { title: "O", image: "OLLA.jpeg" },
+        p: { title: "P", image: "PARLANTE.jpeg" },
+        q: { title: "Q", image: "QUESO.png" },
+        r: { title: "R", image: "RELOJ.jpeg" },
+        s: { title: "S", image: "SILLA.jpeg" },
+        t: { title: "T", image: "TOMATE.jpg" },
+        u: { title: "U", image: "UNO.png" },
+        v: { title: "V", image: "VASO.jpeg" },
+        w: { title: "W", image: "WIRO.jpeg" },
+        x: { title: "X", image: "XILOFÓN.jpeg" },
+        y: { title: "Y", image: "YERBA.jpg" },
+        z: { title: "Z", image: "ZAPALLO.jpg" },
+      };
 
       const grid = document.getElementById("grid");
       const prevBtn = document.getElementById("prevBtn");
       const nextBtn = document.getElementById("nextBtn");
       const pageInfo = document.getElementById("pageInfo");
 
-      let currentPage = 1;
       const keys = Object.keys(sonidos);
+      let currentPage = 1;
 
-      function calculateColumns() {
+      function calculateItemsPerPage() {
         const gridWidth = grid.clientWidth;
         const minColWidth = 180;
         const cols = Math.floor(gridWidth / minColWidth);
-        return cols > 0 ? cols : 1;
+        const rowsPerPage = 3;
+        return cols > 0 ? cols * rowsPerPage : 1;
       }
 
       function renderPage(page) {
         grid.innerHTML = "";
-        const cols = calculateColumns();
-        const rowsPerPage = 3;
-        const itemsPerPage = cols * rowsPerPage;
+        const itemsPerPage = calculateItemsPerPage();
         const totalPages = Math.ceil(keys.length / itemsPerPage);
 
         if (page > totalPages) currentPage = totalPages;
@@ -142,25 +180,21 @@
           const link = document.createElement("a");
           link.href = `play.html?id=${id}`;
 
-          const img = document.createElement("img");
-          img.src = `assets/${upperId}/${upperId}.jpg`;
-          img.alt = s.title;
-
-          const textContainer = document.createElement("div");
-          textContainer.className = "text-container";
-
           const title = document.createElement("div");
           title.textContent = `${s.title}`;
+          title.className = "card-title";
+
+          const img = document.createElement("img");
+          img.src = `assets/${upperId}/${s.image}`;
+          img.alt = s.title;
 
           const desc = document.createElement("div");
           desc.className = "desc";
-          desc.textContent = s.description;
+          desc.textContent = s.image.split(".")[0];
 
-          textContainer.appendChild(title);
-          textContainer.appendChild(desc);
-
+          link.appendChild(title);
           link.appendChild(img);
-          link.appendChild(textContainer);
+          link.appendChild(desc);
 
           card.appendChild(link);
           grid.appendChild(card);
@@ -174,6 +208,7 @@
       prevBtn.onclick = () => renderPage(currentPage - 1);
       nextBtn.onclick = () => renderPage(currentPage + 1);
       window.addEventListener("resize", () => renderPage(currentPage));
+
       renderPage(currentPage);
     </script>
   </body>

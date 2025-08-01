@@ -5,41 +5,91 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Reproductor de sonido</title>
     <style>
+      :root {
+        --primary-color: #0066cc;
+        --primary-hover-color: #003366;
+        --background-color: #f0f0f0;
+        --card-background-color: #f7f7f7; /* Vuelto a su valor original */
+        --border-color: black;
+      }
       body {
         font-family: sans-serif;
         text-align: center;
-        padding: 2em;
-        background: #f0f0f0;
+        padding: 1em;
+        background: var(--background-color);
       }
-      h1 {
-        margin-bottom: 0.5em;
-      }
+      /* Estilos de botones unificados */
       .button {
-        margin-top: 1em;
-        padding: 1em 2em;
-        background-color: #0066cc;
+        padding: 0.5em 1em;
+        font-size: 1em;
+        background-color: var(--primary-color);
         color: white;
         border: none;
         border-radius: 12px;
-        font-size: 1.2em;
         cursor: pointer;
         user-select: none;
+        margin: 0;
+        transition: all 0.4s ease-in-out;
       }
       .button:hover {
-        background-color: #004999;
+        background-color: var(--primary-hover-color);
+        transform: scale(1.05);
+      }
+      .button[disabled] {
+        background-color: #ccc;
+        cursor: not-allowed;
+        transform: none;
+      }
+      .image-card {
+        margin: 2em auto;
+        border: 2px solid var(--border-color); /* Vuelto a su estilo original */
+        display: flex;
+        max-width: 50%;
+        min-width: 300px;
+        flex-direction: column;
+        border-radius: 12px;
+        background-color: var(--card-background-color);
+        overflow: hidden;
+      }
+      .image-card h1#titulo {
+        font-size: 2.5em;
+        border-bottom: 1px solid var(--border-color);
+        margin: 0;
+        padding: 1em;
       }
       .image-container {
-        margin-bottom: 1.5em;
         display: flex;
         justify-content: center;
+        align-items: center;
+        padding: 1em;
+        border-bottom: 1px solid var(--border-color);
       }
       .image-container img {
         max-height: 350px;
-        min-height: 350px;
-        object-fit: cover;
+        max-width: 100%;
+        min-height: 250px;
+        object-fit: contain;
         border-radius: 12px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        box-shadow: none;
         display: none;
+      }
+      .image-card p#descripcion {
+        font-size: 2em;
+        font-weight: bold;
+        margin: 0;
+        padding: 1em;
+      }
+      .controls-container {
+        margin-top: 1.5em;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1em;
+      }
+      .nav-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 1em;
       }
       .nav-link {
         display: inline-block;
@@ -51,14 +101,6 @@
         color: red;
         font-weight: bold;
       }
-      .nav-buttons {
-        display: flex;
-        justify-content: center;
-        gap: 1em;
-        margin-top: 2em;
-      }
-
-      /* Modal */
       #modal {
         display: none;
         position: fixed;
@@ -86,46 +128,60 @@
         box-shadow: 0 0 10px black;
         text-align: center;
       }
-
       #modal-content p {
         font-size: 1.2em;
         margin-bottom: 1em;
       }
       #modal-close {
-        background: #0066cc;
+        background: var(--primary-color);
         color: white;
         border: none;
         padding: 0.5em 1em;
         border-radius: 6px;
         cursor: pointer;
       }
+      @media (max-width: 768px) {
+        .image-card {
+          max-width: 90%;
+        }
+        .image-card h1#titulo {
+          font-size: 2em;
+        }
+        .image-card p#descripcion {
+          font-size: 1.5em;
+        }
+      }
     </style>
   </head>
   <body>
-    <h1 id="titulo">Cargando...</h1>
-
     <audio id="audio" preload="auto"></audio>
-
-    <div class="image-container">
-      <img id="imagen" src="" alt="Imagen del sonido" />
+    <div class="image-card">
+      <h1 id="titulo">Cargando...</h1>
+      <div class="image-container">
+        <img id="imagen" src="" alt="Imagen del sonido" />
+      </div>
+      <p id="descripcion">Cargando...</p>
     </div>
-
-    <button id="playBtn" class="button" style="display: none">
-      ▶️ Reproducir sonido
-    </button>
-
-    <div class="nav-buttons">
-      <button id="prevBtn" class="button">⬅️ Anterior</button>
-      <button id="nextBtn" class="button">Siguiente ➡️</button>
-    </div>
-
-    <div>
+    <div class="controls-container">
+      <button
+        id="playBtn"
+        class="button"
+        style="display: none"
+        aria-label="Reproducir sonido"
+      >
+        ▶️ Reproducir sonido
+      </button>
+      <div class="nav-buttons">
+        <button id="prevBtn" class="button" aria-label="Sonido anterior">
+          ⬅️ Anterior
+        </button>
+        <button id="nextBtn" class="button" aria-label="Sonido siguiente">
+          Siguiente ➡️
+        </button>
+      </div>
       <a class="nav-link" href="index.html">⬅️ Volver al menú</a>
     </div>
-
     <p id="error" class="error"></p>
-
-    <!-- Modal -->
     <div
       id="modal"
       role="dialog"
@@ -137,59 +193,93 @@
         <button id="modal-close" aria-label="Cerrar modal">Cerrar</button>
       </div>
     </div>
-
     <script>
-      const ids = [..."0123456789", ..."ABCDEFGHIJKLMNÑOPQRSTUVWXYZ"];
-      const sonidos = {};
-      ids.forEach((id) => {
-        const isNumber = !isNaN(id);
-        const type = isNumber ? "Número" : "Letra";
-        sonidos[id.toLowerCase()] = {
-          title: `${type} ${id}`,
-          description: `Sonido de la ${type.toLowerCase()} ${id}`,
-          emoji: id,
-        };
-      });
+      const sonidos = {
+        0: { title: "0", image: "CERO.jpeg" },
+        1: { title: "1", image: "UNO.jpeg" },
+        2: { title: "2", image: "DOS.jpeg" },
+        3: { title: "3", image: "TRES.jpeg" },
+        4: { title: "4", image: "CUATRO.jpeg" },
+        5: { title: "5", image: "CINCO.jpeg" },
+        6: { title: "6", image: "SEIS.jpeg" },
+        7: { title: "7", image: "SIETE.jpeg" },
+        8: { title: "8", image: "OCHO.jpeg" },
+        9: { title: "9", image: "NUEVE.jpeg" },
+        a: { title: "A", image: "ARMARIO.jpeg" },
+        b: { title: "B", image: "BANDERA.jpeg" },
+        c: { title: "C", image: "CAMPANA.jpeg" },
+        d: { title: "D", image: "DELANTAL.jpeg" },
+        e: { title: "E", image: "ESCALERA.jpeg" },
+        f: { title: "F", image: "FOCO.png" },
+        g: { title: "G", image: "GUITARRA.jpg" },
+        h: { title: "H", image: "HOSPITAL.jpeg" },
+        i: { title: "I", image: "IGLESIA.jpeg" },
+        j: { title: "J", image: "JARRA.jpeg" },
+        k: { title: "K", image: "KIOSCO.jpeg" },
+        l: { title: "L", image: "LIMÓN.jpeg" },
+        m: { title: "M", image: "MATE.jpg" },
+        n: { title: "N", image: "NARANJA.jpeg" },
+        ñ: { title: "Ñ", image: "NOQUIS.jpeg" },
+        o: { title: "O", image: "OLLA.jpeg" },
+        p: { title: "P", image: "PARLANTE.jpeg" },
+        q: { title: "Q", image: "QUESO.png" },
+        r: { title: "R", image: "RELOJ.jpeg" },
+        s: { title: "S", image: "SILLA.jpeg" },
+        t: { title: "T", image: "TOMATE.jpg" },
+        u: { title: "U", image: "UNO.png" },
+        v: { title: "V", image: "VASO.jpeg" },
+        w: { title: "W", image: "WIRO.jpeg" },
+        x: { title: "X", image: "XILOFÓN.jpeg" },
+        y: { title: "Y", image: "YERBA.jpg" },
+        z: { title: "Z", image: "ZAPALLO.jpg" },
+      };
 
+      const ids = Object.keys(sonidos);
       const params = new URLSearchParams(window.location.search);
       const id = params.get("id");
-      const upperId = id ? id.toUpperCase() : "";
 
+      // La clave para buscar en el objeto siempre debe ser minúscula.
+      const idKey = id ? id.toLowerCase() : "";
+
+      const upperId = id ? id.toUpperCase() : "";
       const audioEl = document.getElementById("audio");
       const playBtn = document.getElementById("playBtn");
       const tituloEl = document.getElementById("titulo");
+      const descEl = document.getElementById("descripcion");
       const imagenEl = document.getElementById("imagen");
       const errorEl = document.getElementById("error");
-
       const prevBtn = document.getElementById("prevBtn");
       const nextBtn = document.getElementById("nextBtn");
-
       const modal = document.getElementById("modal");
       const modalClose = document.getElementById("modal-close");
+      const currentIndex = ids.findIndex((char) => char === idKey);
 
-      const currentIndex = ids.findIndex((char) => char.toLowerCase() === id);
-
-      if (!id || !sonidos[id]) {
+      // Usamos idKey para buscar en el objeto sonidos
+      if (!id || !sonidos[idKey]) {
         errorEl.textContent = "⚠️ Sonido no encontrado.";
         playBtn.style.display = "none";
         audioEl.style.display = "none";
         imagenEl.style.display = "none";
         tituloEl.textContent = "";
-        prevBtn.style.display = "none";
-        nextBtn.style.display = "none";
+        descEl.textContent = "";
+        prevBtn.disabled = true;
+        nextBtn.disabled = true;
       } else {
-        const s = sonidos[id];
+        const s = sonidos[idKey];
         tituloEl.textContent = `${s.title}`;
-        imagenEl.src = `assets/${upperId}/${upperId}.jpg`;
+        imagenEl.src = `assets/${upperId}/${s.image}`;
         imagenEl.style.display = "block";
+
+        // Eliminamos la extensión del archivo para la descripción
+        const descriptionText = s.image.split(".")[0];
+        descEl.textContent = descriptionText;
 
         audioEl.src = `assets/${upperId}/${upperId}.mp3`;
         audioEl.style.display = "none";
         playBtn.style.display = "inline-block";
         playBtn.textContent = "▶️ Reproducir sonido";
-
         playBtn.onclick = () => {
-          if (id.toLowerCase() === "h") {
+          if (idKey === "h") {
             modal.classList.add("show");
             return;
           }
@@ -201,32 +291,26 @@
             })
             .catch((e) => alert("Error reproduciendo el audio: " + e.message));
         };
-
         modalClose.onclick = () => {
           modal.classList.remove("show");
         };
-
         window.onclick = (e) => {
           if (e.target === modal) {
             modal.classList.remove("show");
           }
         };
-
-        // Navegación siguiente/anterior
         prevBtn.onclick = () => {
           if (currentIndex > 0) {
-            const prevId = ids[currentIndex - 1].toLowerCase();
+            const prevId = ids[currentIndex - 1];
             window.location.href = `play.html?id=${prevId}`;
           }
         };
-
         nextBtn.onclick = () => {
           if (currentIndex < ids.length - 1) {
-            const nextId = ids[currentIndex + 1].toLowerCase();
+            const nextId = ids[currentIndex + 1];
             window.location.href = `play.html?id=${nextId}`;
           }
         };
-
         if (currentIndex === 0) prevBtn.disabled = true;
         if (currentIndex === ids.length - 1) nextBtn.disabled = true;
       }
